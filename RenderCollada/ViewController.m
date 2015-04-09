@@ -31,9 +31,9 @@
     view.context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
     [EAGLContext setCurrentContext:view.context];
     self.baseEffect = [[GLKBaseEffect alloc] init];
-
+    
     glEnable(GL_CULL_FACE);
-
+    
     self.baseEffect.constantColor = GLKVector4Make(1.0f, 1.0f, 1.0f, 1.0f);
     
     [self.dae prepareToDraw];
@@ -42,7 +42,7 @@
     glBufferData(GL_ARRAY_BUFFER, sizeof(SceneVertex) * self.dae.vertexCount, self.dae.vertexs, GL_STATIC_DRAW);
     
     [self effectLight];
-
+    [self modelTransform];
     self.frameIndex = 0;
 }
 
@@ -55,13 +55,26 @@
     if (++self.frameIndex > 100){
         self.frameIndex = 0;
     }
+    [self animateModelTransform];
+    
+}
+
+- (void)animateModelTransform
+{
+    GLKMatrix4 modelViewMatrix = GLKMatrix4Identity;
+    modelViewMatrix = GLKMatrix4RotateZ(modelViewMatrix, GLKMathDegreesToRadians(-90.0));
+    modelViewMatrix = GLKMatrix4RotateX(modelViewMatrix, GLKMathDegreesToRadians(-90.0));
+    CGFloat scale = 0.005;
+    modelViewMatrix = GLKMatrix4Scale(modelViewMatrix, scale, scale, scale);
+    self.baseEffect.transform.modelviewMatrix = modelViewMatrix;
 }
 
 - (void)modelTransform
 {
     GLKMatrix4 modelViewMatrix = GLKMatrix4Identity;
     modelViewMatrix = GLKMatrix4RotateZ(modelViewMatrix, GLKMathDegreesToRadians(-90.0));
-    modelViewMatrix = GLKMatrix4RotateX(modelViewMatrix, GLKMathDegreesToRadians( 90.0));
+    modelViewMatrix = GLKMatrix4RotateY(modelViewMatrix, GLKMathDegreesToRadians(-90.0));
+    //    modelViewMatrix = GLKMatrix4RotateX(modelViewMatrix, GLKMathDegreesToRadians( 90.0));
     CGFloat scale = 0.005;
     modelViewMatrix = GLKMatrix4Scale(modelViewMatrix, scale, scale, scale);
     self.baseEffect.transform.modelviewMatrix = modelViewMatrix;
@@ -79,7 +92,6 @@
 {
     [self.baseEffect prepareToDraw];
     [self animate];
-    [self modelTransform];
     glClear(GL_COLOR_BUFFER_BIT);
     glEnableVertexAttribArray(GLKVertexAttribPosition);
     glVertexAttribPointer(GLKVertexAttribPosition, 3, GL_FLOAT, GL_FALSE, sizeof(SceneVertex), NULL + offsetof(SceneVertex,positionCoords));
